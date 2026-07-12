@@ -147,29 +147,43 @@ class LoginDialog(QDialog):
         layout.addWidget(self.input_password_confirm)
         
         # Auto Login Checkbox
+        # Generate a temporary SVG checkmark file at runtime to work around QSS base64 URI limits
+        self.check_svg_path = os.path.join(storage.get_app_directory(), "check.svg").replace("\\", "/")
+        try:
+            svg_content = (
+                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">'
+                '<path fill="none" stroke="white" stroke-width="4.5" stroke-linecap="round" '
+                'stroke-linejoin="round" d="M20 6L9 17l-5-5"/>'
+                '</svg>'
+            )
+            with open(self.check_svg_path, "w") as f:
+                f.write(svg_content)
+        except Exception as e:
+            print(f"Error creating check.svg: {e}")
+
         from PySide6.QtWidgets import QCheckBox
         self.checkbox_autologin = QCheckBox("자동 로그인", self.container)
-        self.checkbox_autologin.setStyleSheet("""
-            QCheckBox {
+        self.checkbox_autologin.setStyleSheet(f"""
+            QCheckBox {{
                 color: #64748B;
                 font-size: 12px;
                 font-weight: 500;
                 spacing: 6px;
                 margin-top: 4px;
                 margin-bottom: 4px;
-            }
-            QCheckBox::indicator {
+            }}
+            QCheckBox::indicator {{
                 width: 16px;
                 height: 16px;
                 border: 1.5px solid #CBD5E1;
                 border-radius: 4px;
                 background-color: #F8FAFC;
-            }
-            QCheckBox::indicator:checked {
+            }}
+            QCheckBox::indicator:checked {{
                 border-color: #F59E0B;
                 background-color: #F59E0B;
-                image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTIwIDZMOSAxN2wtNS01Ii8+PC9zdmc+");
-            }
+                image: url("{self.check_svg_path}");
+            }}
         """)
         layout.addWidget(self.checkbox_autologin)
         
