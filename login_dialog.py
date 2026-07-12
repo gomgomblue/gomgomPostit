@@ -168,6 +168,7 @@ class LoginDialog(QDialog):
             QCheckBox::indicator:checked {
                 border-color: #F59E0B;
                 background-color: #F59E0B;
+                image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIzLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgZD0iTTIwIDZMOSAxN2wtNS01Ii8+PC9zdmc+");
             }
         """)
         layout.addWidget(self.checkbox_autologin)
