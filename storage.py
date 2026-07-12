@@ -9,13 +9,21 @@ except ImportError:
 
 def get_app_directory():
     import sys
+    import platform
     # If running as PyInstaller bundle
     if getattr(sys, 'frozen', False):
-        exec_dir = os.path.dirname(sys.executable)  # Contents/MacOS
-        contents_dir = os.path.dirname(exec_dir)  # Contents
-        app_bundle_dir = os.path.dirname(contents_dir)  # GomgomPostit.app
-        app_parent_dir = os.path.dirname(app_bundle_dir)  # Folder containing the .app
-        return app_parent_dir
+        exec_path = sys.executable
+        if platform.system() == 'Darwin':
+            # On macOS, sys.executable is inside the .app bundle (Contents/MacOS/)
+            # We want the directory containing the .app bundle
+            exec_dir = os.path.dirname(exec_path)  # Contents/MacOS
+            contents_dir = os.path.dirname(exec_dir)  # Contents
+            app_bundle_dir = os.path.dirname(contents_dir)  # GomgomPostit.app
+            app_parent_dir = os.path.dirname(app_bundle_dir)  # Folder containing the .app
+            return app_parent_dir
+        else:
+            # On Windows/Linux, it's just the folder containing the executable (.exe)
+            return os.path.dirname(exec_path)
     else:
         # Development mode
         return os.path.dirname(os.path.abspath(__file__))
