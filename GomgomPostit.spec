@@ -32,6 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon='app_icon.ico',
 )
 coll = COLLECT(
     exe,
@@ -45,7 +46,7 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='GomgomPostit.app',
-    icon=None,
+    icon='app_icon.icns',
     bundle_identifier='com.gominfra.gomgompostit',
     info_plist={
         'LSUIElement': False,
