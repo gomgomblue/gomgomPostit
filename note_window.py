@@ -269,6 +269,39 @@ class NoteWindow(QWidget):
             
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         
+        # Ensure the note window is visible on one of the connected screens
+        from PySide6.QtGui import QGuiApplication
+        from PySide6.QtCore import QRect
+        screens = QGuiApplication.screens()
+        on_screen = False
+        
+        for screen in screens:
+            geom = screen.availableGeometry()
+            note_rect = QRect(x, y, width, height)
+            if geom.intersects(note_rect):
+                # Adjust y if title bar goes beyond the top screen limit
+                if y < geom.y():
+                    y = geom.y()
+                # Adjust y if title bar goes beyond the bottom screen limit
+                if y > geom.y() + geom.height() - 40:
+                    y = geom.y() + geom.height() - 200
+                # Adjust x if the note goes too far left
+                if x + width < geom.x() + 50:
+                    x = geom.x()
+                # Adjust x if the note goes too far right
+                if x > geom.x() + geom.width() - 50:
+                    x = geom.x() + geom.width() - 200
+                on_screen = True
+                break
+                
+        # If the note is completely off-screen, center it on the primary screen
+        if not on_screen and screens:
+            primary = QGuiApplication.primaryScreen()
+            if primary:
+                p_geom = primary.availableGeometry()
+                x = p_geom.x() + (p_geom.width() - width) // 2
+                y = p_geom.y() + (p_geom.height() - height) // 2
+
         self.setGeometry(x, y, width, height)
         self.setMinimumSize(220, 180)
         
