@@ -117,13 +117,14 @@ class ControlWindow(QWidget):
         menu = QMenu(self)
         menu.setStyleSheet(self.get_menu_style())
         
-        if self.is_auto_logged_in:
-            action_auto = QAction("🔓 자동 로그인 취소", menu)
-            action_auto.triggered.connect(lambda: self.handle_toggle_autologin(False))
-        else:
-            action_auto = QAction("🔒 자동 로그인 설정", menu)
-            action_auto.triggered.connect(lambda: self.handle_toggle_autologin(True))
-        menu.addAction(action_auto)
+        if not storage.is_force_local_sqlite():
+            if self.is_auto_logged_in:
+                action_auto = QAction("🔓 자동 로그인 취소", menu)
+                action_auto.triggered.connect(lambda: self.handle_toggle_autologin(False))
+            else:
+                action_auto = QAction("🔒 자동 로그인 설정", menu)
+                action_auto.triggered.connect(lambda: self.handle_toggle_autologin(True))
+            menu.addAction(action_auto)
         
         if storage.is_force_local_sqlite():
             action_mode = QAction("🖥 서버 버전으로 실행", menu)
