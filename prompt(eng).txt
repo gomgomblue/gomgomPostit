@@ -1,0 +1,83 @@
+You are tasking an AI assistant to build a desktop sticky note (Post-it) application from scratch. The application must replicate the exact functionality, UI design, database structures, and platform paths of the project.
+
+### 1. Overview & Architecture
+- **Language & Framework**: Python 3.9+ using PySide6 (Qt for Python).
+- **Core Windows**:
+  1. **Control Window (Toolbar)**: A small horizontal toolbar window that controls the application.
+  2. **Note Windows**: Multiple borderless sticky note windows that can be moved, resized, folded, and custom-colored.
+- **Cross-Platform Paths**: Define a helper `get_app_directory()` that resolves paths differently if frozen (PyInstaller):
+  - On macOS (Darwin): Resolves to the parent directory containing the `GomgomPostit.app` bundle.
+  - On Windows/Linux: Resolves to the folder containing the `.exe` binary.
+  - Development mode: Resolves to the directory of the script.
+- **Unified Configurations**:
+  - **Local SQLite DB**: Located at `[App Directory]/.gomgom_postit.db`.
+  - **Unified Configuration**: Located at `[App Directory]/.gomgom_config` (JSON file). It stores `version_mode` (default is `"local"`) and `control_position` (`{"x": int, "y": int}`).
+
+---
+
+### 2. Control Window (Toolbar)
+- **Visual Design**: Frameless window, styled with modern dark premium slate and rounded borders.
+- **Title Label**: A label reading "곰곰메모" on the far left, padded with `padding-top: 6px` to align perfectly with the adjacent toolbar buttons.
+- **Buttons (Sorted Left to Right)**:
+  1. **▾ (Menu Dropdown Button)**: Shows a dropdown menu containing titles of all notes (both active and closed). Toggling a note title shows or hides that note window.
+  2. **+ (New Note Button)**: Instantly creates a new note (user can select text note or checklist).
+  3. **⚙ (Settings Menu Button)**: Opens a context menu:
+     - If running in **Server Mode**: Shows "로컬 버전으로 실행" (Run in Local Mode) and "프로그램 종료" (Exit).
+     - If running in **Local Mode**: Shows "서버 버전으로 실행" (Run in Server Mode) and "프로그램 종료" (Exit).
+- **First-run Centering**: If `.gomgom_config` does not contain coordinates, position the Control Window at the center of the primary screen. On exit, save the window position into `.gomgom_config`.
+
+---
+
+### 3. Execution Modes
+- **Local Mode (Default on First Launch)**:
+  - Bypasses the login dialog entirely.
+  - Authenticates internally under the username `"local_user"`.
+  - Reads and writes notes to the SQLite database `.gomgom_postit.db`.
+- **Server Mode**:
+  - Requires user authentication via the Login Dialog.
+  - Communicates with a MariaDB database server:
+    - **Host**: `[your host ip]`
+    - **Port**: `[your database port]`
+    - **User**: `[your database user]`
+    - **Password**: `[your database password]`
+    - **Database**: `[your database name]`
+  - Encrypt the database connection details in the code using an XOR cipher with a 32-byte key (e.g., derived using PBKDF2 with salt) and Base64-encoded to hide them from raw string inspection.
+  - Bypasses the login dialog on subsequent launches if "Auto Login" was checked (saved credentials are encrypted).
+
+---
+
+### 4. Login & Account Dialog
+- **Visual Design**: Sleek frameless window with deep slate buttons (`#1E293B`) and golden amber highlight borders (`#F59E0B`).
+- **Autologin Checkbox**: Custom stylesheet checkmark indicator. When checked, it displays a crisp white SVG checkmark (`✓`) on an amber background. Generate the SVG dynamically at runtime to a file `check.svg` in `[App Directory]` (and ignore it in `.gitignore`) to load it inside the stylesheet via `url("check.svg")` because Qt Style Sheets do not support base64 inline images natively.
+- **Account Credentials**: The user ID is strictly an email address, validated using the regex: `^[\w\.-]+@[\w\.-]+\.\w+$`.
+- **Modes**:
+  - **Login**: Autologin checkbox is visible. "Sign Up", "Reset Password", "Change Password" links are presented at the bottom.
+  - **Sign Up**: Asks for Email ID and Password twice (confirm password). Registers directly into the MariaDB `users` table (`username`, `password_hash`, `salt`).
+  - **Password Change**: Asks for Email ID, Current Password, and New Password. Updates the MariaDB hash.
+  - **Password Reset**: Asks only for Email ID. Generates a 6-digit random number, updates the MariaDB user password, and sends it to the user's email via Gmail SMTP SSL:
+    - **Server**: `smtp.gmail.com`
+    - **Port**: `465`
+    - **User**: `[your gmail user]` (Obscured in code via XOR + Base64)
+    - **Password**: `[your gmail app password]` (Obscured in code via XOR + Base64)
+    - Backup Log: Write a copy of the sent email body to local file `~/.gomgom_email_logs.txt`.
+
+---
+
+### 5. Note Windows (Sticky Notes)
+- **Visual Design**: Frameless window styled like real yellow/colored sticky notes with slight drop shadows.
+- **Interaction**:
+  - Drag the top header to move the note.
+  - Double-click the header to fold (minimize vertically to show header only) or unfold the note.
+  - Right-click context menu options to change colors, delete, or close the note.
+- **Note Types**:
+  - **Text Note**: A plain text editor.
+  - **To-Do Note**: A checklist note where users can add items, toggle checkboxes, edit item texts, and delete items.
+- **Persistence**: Dynamically reads/writes note attributes (`id`, `username`, `type`, `content`, `todo_items` as JSON string, `x`, `y`, `width`, `height`, `color`, `always_on_top`) to either SQLite or MariaDB.
+
+---
+
+### 6. Packaging & Icons
+- PyInstaller spec files configure:
+  - macOS Application Bundle (`GomgomPostit.app`) with icon `app_icon.icns`.
+  - Windows Executable (`GomgomPostit.exe`) with icon `app_icon.ico`.
+- The icons are a yellow square sticky post-it note with a curled bottom-right corner and transparent alpha background.
