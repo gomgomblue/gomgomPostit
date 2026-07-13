@@ -751,11 +751,19 @@ class NoteWindow(QWidget):
     def close_note(self):
         if self.is_important:
             from PySide6.QtWidgets import QMessageBox
-            msg = QMessageBox(self)
+            msg = QMessageBox(None)
             msg.setIcon(QMessageBox.Icon.Warning)
             msg.setWindowTitle("경고")
             msg.setText("중요 설정(★)된 메시지는 삭제할 수 없습니다.")
-            msg.addButton("확인", QMessageBox.ButtonRole.AcceptRole)
+            msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+            
+            # Translate the standard OK button to '확인'
+            ok_btn = msg.button(QMessageBox.StandardButton.Ok)
+            if ok_btn:
+                ok_btn.setText("확인")
+                
+            # Make sure it stays on top of always-on-top note windows
+            msg.setWindowFlags(msg.windowFlags() | Qt.WindowType.WindowStaysOnTopHint)
             msg.exec()
             return
             
