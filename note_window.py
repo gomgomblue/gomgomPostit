@@ -242,7 +242,7 @@ class NormalizedLineEdit(QLineEdit):
             self.blockSignals(False)
 
 class NoteWindow(QWidget):
-    def __init__(self, note_id=None, note_type="memo", content="", todo_items=None, x=100, y=100, width=300, height=300, color="yellow", always_on_top=False, on_save_callback=None, on_close_callback=None, on_new_callback=None, on_refresh_callback=None):
+    def __init__(self, note_id=None, note_type="memo", content="", todo_items=None, x=100, y=100, width=300, height=300, color="yellow", always_on_top=False, on_save_callback=None, on_close_callback=None, on_new_callback=None, on_refresh_callback=None, is_important=False):
         super().__init__()
         
         self.note_id = note_id if note_id else str(uuid.uuid4())
@@ -251,6 +251,7 @@ class NoteWindow(QWidget):
         self.initial_todo_items = todo_items if todo_items else []
         self.current_color_name = color if color in COLOR_PALETTES else "yellow"
         self.always_on_top = always_on_top
+        self.is_important = is_important
         self.on_save_callback = on_save_callback
         self.on_close_callback = on_close_callback
         self.on_new_callback = on_new_callback
@@ -409,6 +410,13 @@ class NoteWindow(QWidget):
         self.btn_pin.clicked.connect(self.toggle_pin)
         title_layout.addWidget(self.btn_pin)
         
+        self.btn_star = QPushButton("☆", self.title_bar)
+        self.btn_star.setFixedSize(26, 26)
+        self.btn_star.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.btn_star.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.btn_star.clicked.connect(self.toggle_important)
+        title_layout.addWidget(self.btn_star)
+        
         self.btn_color = QPushButton("🎨", self.title_bar)
         self.btn_color.setFixedSize(26, 26)
         self.btn_color.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
@@ -564,6 +572,7 @@ class NoteWindow(QWidget):
         """
         self.setStyleSheet(qss)
         self.update_pin_button_style()
+        self.update_star_button_style()
 
     def show_new_menu(self):
         # Create dropdown QMenu for type selection
@@ -632,6 +641,20 @@ class NoteWindow(QWidget):
             self.btn_pin.setStyleSheet(f"background-color: {palette['hover']}; border: 1px solid rgba(0, 0, 0, 0.1);")
         else:
             self.btn_pin.setStyleSheet("background-color: transparent; border: none;")
+
+    def toggle_important(self):
+        self.is_important = not self.is_important
+        self.update_star_button_style()
+        self.trigger_save_immediately()
+
+    def update_star_button_style(self):
+        palette = COLOR_PALETTES[self.current_color_name]
+        if self.is_important:
+            self.btn_star.setText("★")
+            self.btn_star.setStyleSheet(f"color: #F59E0B; font-size: 15px; font-weight: bold; background-color: {palette['hover']}; border: 1px solid rgba(0, 0, 0, 0.1);")
+        else:
+            self.btn_star.setText("☆")
+            self.btn_star.setStyleSheet("color: #64748B; font-size: 15px; background-color: transparent; border: none;")
 
     # Todo list item interaction
     def handle_add_todo(self):
@@ -726,6 +749,15 @@ class NoteWindow(QWidget):
             self.on_new_callback(self, note_type)
 
     def close_note(self):
+        if self.is_important:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.warning(
+                self,
+                "경고",
+                "중요 설정(★)된 메시지는 삭제할 수 없습니다."
+            )
+            return
+            
         # Save immediately before closing
         self.trigger_save_immediately()
         if self.on_close_callback:
@@ -742,7 +774,8 @@ class NoteWindow(QWidget):
             "width": self.width(),
             "height": self.height(),
             "color": self.current_color_name,
-            "always_on_top": self.always_on_top
+            "always_on_top": self.always_on_top,
+            "is_important": self.is_important
         }
         if self.note_type == "memo":
             data["content"] = self.text_edit.toPlainText()

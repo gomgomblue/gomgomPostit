@@ -107,7 +107,8 @@ def init_sqlite():
                 width INTEGER,
                 height INTEGER,
                 color TEXT,
-                always_on_top INTEGER
+                always_on_top INTEGER,
+                is_important INTEGER DEFAULT 0
             )
         """)
         cursor.execute("""
@@ -120,6 +121,10 @@ def init_sqlite():
         # Backward compatibility: alter tables if needed
         try:
             cursor.execute("ALTER TABLE notes ADD COLUMN username TEXT")
+        except sqlite3.OperationalError:
+            pass
+        try:
+            cursor.execute("ALTER TABLE notes ADD COLUMN is_important INTEGER DEFAULT 0")
         except sqlite3.OperationalError:
             pass
         conn.commit()
@@ -147,7 +152,8 @@ def load_notes_sqlite(username):
                 "width": row["width"],
                 "height": row["height"],
                 "color": row["color"],
-                "always_on_top": bool(row["always_on_top"])
+                "always_on_top": bool(row["always_on_top"]),
+                "is_important": bool(row.get("is_important", 0))
             })
         conn.close()
     except Exception as e:
@@ -162,8 +168,8 @@ def save_notes_sqlite(notes, username):
         cursor.execute("DELETE FROM notes WHERE username = ?", (username,))
         for note in notes:
             cursor.execute("""
-                INSERT INTO notes (id, username, type, content, todo_items, x, y, width, height, color, always_on_top)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO notes (id, username, type, content, todo_items, x, y, width, height, color, always_on_top, is_important)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 note.get("id"),
                 username,
@@ -175,7 +181,8 @@ def save_notes_sqlite(notes, username):
                 note.get("width"),
                 note.get("height"),
                 note.get("color"),
-                1 if note.get("always_on_top") else 0
+                1 if note.get("always_on_top") else 0,
+                1 if note.get("is_important") else 0
             ))
         conn.commit()
         conn.close()
@@ -222,7 +229,8 @@ def init_mariadb(config):
                 width INT,
                 height INT,
                 color VARCHAR(20),
-                always_on_top TINYINT(1)
+                always_on_top TINYINT(1),
+                is_important TINYINT(1) DEFAULT 0
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         """)
         cursor.execute("""
@@ -243,6 +251,10 @@ def init_mariadb(config):
         # Backward compatibility: alter tables if needed
         try:
             cursor.execute("ALTER TABLE notes ADD COLUMN username VARCHAR(50)")
+        except Exception:
+            pass
+        try:
+            cursor.execute("ALTER TABLE notes ADD COLUMN is_important TINYINT(1) DEFAULT 0")
         except Exception:
             pass
         conn.commit()
@@ -279,7 +291,8 @@ def load_notes_mariadb(username, config):
                 "width": row["width"],
                 "height": row["height"],
                 "color": row["color"],
-                "always_on_top": bool(row["always_on_top"])
+                "always_on_top": bool(row["always_on_top"]),
+                "is_important": bool(row.get("is_important", 0))
             })
         conn.close()
     except Exception as e:
@@ -303,8 +316,8 @@ def save_notes_mariadb(notes, username, config):
         cursor.execute("DELETE FROM notes WHERE username = %s", (username,))
         for note in notes:
             cursor.execute("""
-                INSERT INTO notes (id, username, type, content, todo_items, x, y, width, height, color, always_on_top)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO notes (id, username, type, content, todo_items, x, y, width, height, color, always_on_top, is_important)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """, (
                 note.get("id"),
                 username,
@@ -316,7 +329,8 @@ def save_notes_mariadb(notes, username, config):
                 note.get("width"),
                 note.get("height"),
                 note.get("color"),
-                1 if note.get("always_on_top") else 0
+                1 if note.get("always_on_top") else 0,
+                1 if note.get("is_important") else 0
             ))
         conn.commit()
         conn.close()

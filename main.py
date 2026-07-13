@@ -266,7 +266,8 @@ class GomgomPostitApp:
             on_save_callback=self.save_all_notes,
             on_close_callback=self.handle_note_close,
             on_new_callback=self.handle_new_note_request,
-            on_refresh_callback=self.reload_notes_from_db
+            on_refresh_callback=self.reload_notes_from_db,
+            is_important=data.get("is_important", False)
         )
         self.active_notes[note_id] = window
         return window
@@ -420,6 +421,8 @@ class GomgomPostitApp:
                 )
                 window.always_on_top = note_data.get("always_on_top", False)
                 window.update_always_on_top()
+                window.is_important = note_data.get("is_important", False)
+                window.update_star_button_style()
                 
                 if window.note_type == "memo":
                     new_text = note_data.get("content", "")

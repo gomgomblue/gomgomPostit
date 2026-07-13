@@ -69,10 +69,12 @@ You are tasking an AI assistant to build a desktop sticky note (Post-it) applica
   - Drag the top header to move the note.
   - Double-click the header to fold (minimize vertically to show header only) or unfold the note.
   - Right-click context menu options to change colors, delete, or close the note.
+  - **Star Button (Important Status)**: A star icon button (`★` / `☆`) is placed to the right of the "Always on Top" pin button. Clicking it toggles the "Important" status.
+    - If a note is marked as important (star icon filled `★`), clicking the Close (`✕`) button blocks closing/deletion and displays a warning dialog: "중요 설정(별아이콘)된 메시지는 삭제할 수 없습니다."
 - **Note Types**:
   - **Text Note**: A plain text editor.
   - **To-Do Note**: A checklist note where users can add items, toggle checkboxes, edit item texts, and delete items.
-- **Persistence**: Dynamically reads/writes note attributes (`id`, `username`, `type`, `content`, `todo_items` as JSON string, `x`, `y`, `width`, `height`, `color`, `always_on_top`) to either SQLite or MariaDB.
+- **Persistence**: Dynamically reads/writes note attributes (`id`, `username`, `type`, `content`, `todo_items` as JSON string, `x`, `y`, `width`, `height`, `color`, `always_on_top`, `is_important`) to either SQLite or MariaDB.
 
 ---
 
