@@ -751,11 +751,12 @@ class NoteWindow(QWidget):
     def close_note(self):
         if self.is_important:
             from PySide6.QtWidgets import QMessageBox
-            QMessageBox.warning(
-                self,
-                "경고",
-                "중요 설정(★)된 메시지는 삭제할 수 없습니다."
-            )
+            msg = QMessageBox(self)
+            msg.setIcon(QMessageBox.Icon.Warning)
+            msg.setWindowTitle("경고")
+            msg.setText("중요 설정(★)된 메시지는 삭제할 수 없습니다.")
+            msg.addButton("확인", QMessageBox.ButtonRole.AcceptRole)
+            msg.exec()
             return
             
         # Save immediately before closing
