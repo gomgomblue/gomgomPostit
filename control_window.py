@@ -52,8 +52,10 @@ class ControlWindow(QWidget):
         # 0. Text Title Label (곰곰메모)
         from PySide6.QtWidgets import QLabel
         self.label_title = QLabel("곰곰메모", self.container)
-        self.label_title.setFont(QFont("Outfit", 12, QFont.Weight.Bold))
-        self.label_title.setStyleSheet("color: #F59E0B; padding-right: 4px; padding-left: 2px; padding-top: 6px;")
+        title_font_size = 12 if sys.platform == "darwin" else 8
+        self.label_title.setFont(QFont("Outfit", title_font_size, QFont.Weight.Bold))
+        padding_top = 6 if sys.platform == "darwin" else 1
+        self.label_title.setStyleSheet(f"color: #F59E0B; padding-right: 4px; padding-left: 2px; padding-top: {padding_top}px;")
         container_layout.addWidget(self.label_title)
 
         # 1-2. Dropdown (▾) button for listed notes (70% Larger)
