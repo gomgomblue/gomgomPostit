@@ -70,7 +70,8 @@ class ControlWindow(QWidget):
         # 1. Plus (+) button for adding notes
         self.btn_plus = QPushButton("+", self.container)
         self.btn_plus.setFixedSize(28, 28)
-        self.btn_plus.setFont(QFont("Outfit", 16, QFont.Weight.Bold))
+        plus_font_size = 16 if sys.platform == "darwin" else 14
+        self.btn_plus.setFont(QFont("Outfit", plus_font_size, QFont.Weight.Bold))
         self.btn_plus.setToolTip("메모 및 할일 추가")
         self.btn_plus.setStyleSheet(self.get_button_style())
         self.btn_plus.clicked.connect(self.show_plus_menu)
@@ -79,7 +80,8 @@ class ControlWindow(QWidget):
         # 2. Settings (⚙) button (40% Larger)
         self.btn_settings = QPushButton("⚙", self.container)
         self.btn_settings.setFixedSize(28, 28)
-        self.btn_settings.setFont(QFont("Outfit", 19))
+        settings_font_size = 19 if sys.platform == "darwin" else 12
+        self.btn_settings.setFont(QFont("Outfit", settings_font_size))
         self.btn_settings.setToolTip("설정 메뉴")
         self.btn_settings.setStyleSheet(self.get_button_style())
         self.btn_settings.clicked.connect(self.show_settings_menu)
